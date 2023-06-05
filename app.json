@@ -6,6 +6,8 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
+    "scheme": "condoaccess",
+    "backgroundColor": "#212529",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -22,9 +24,6 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       }
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
     }
   }
 }
