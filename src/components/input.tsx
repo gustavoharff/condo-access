@@ -8,7 +8,7 @@ export function Input(props: TextInputProps) {
       {...props}
       placeholderTextColor={gray[600]}
       className={classNames(
-        "w-full border-b border-solid border-gray-600 p-2 font-poppins-400",
+        "w-full border-b border-solid border-gray-600 p-2 font-poppins-400 text-white",
         props.className
       )}
     />
