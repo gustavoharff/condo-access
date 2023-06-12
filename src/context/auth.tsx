@@ -1,7 +1,8 @@
 import { useRouter, useSegments } from "expo-router";
 import React, { PropsWithChildren, useCallback, useEffect, useMemo } from "react";
-import axios from "axios";
+import axios, { AxiosInstance } from "axios";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { client } from "../lib/api";
 
 type User = {
   id: string;
@@ -47,12 +48,6 @@ function useProtectedRoute(user: User | null) {
 export function Provider(props: PropsWithChildren) {
   const [user, setAuth] = React.useState<User | null>(null);
 
-  const client = useMemo(() => {
-    return axios.create({
-      baseURL: "http://localhost:3000",
-    });
-  }, []);
-
   useProtectedRoute(user);
 
   const signIn = useCallback(async (email: string, password: string) => {
@@ -61,20 +56,20 @@ export function Provider(props: PropsWithChildren) {
       password,
     });
 
-    setAuth(response.data.user);
-
     client.defaults.headers.authorization = `Bearer ${response.data.token}`;
     await AsyncStorage.setItem('token', response.data.token);
     await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
+
+    setAuth(response.data.user);
   }, []);
 
   const signOut = useCallback(() => {
-    setAuth(null);
-
     delete client.defaults.headers.authorization;
 
     AsyncStorage.removeItem('token');
     AsyncStorage.removeItem('user');
+
+    setAuth(null);
   }, []);
 
   useEffect(() => {

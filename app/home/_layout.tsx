@@ -10,7 +10,6 @@ export const unstable_settings = {
 
 export default function Root() {
   return (
-    // Setup the auth context and render our layout inside of it.
     <Tabs
       sceneContainerStyle={{
         backgroundColor: "transparent",
@@ -28,7 +27,7 @@ export default function Root() {
           tabBarShowLabel: false,
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons
-              name={"car-clock"}
+              name="boom-gate-arrow-up"
               size={size}
               color={color}
             />
@@ -38,6 +37,25 @@ export default function Root() {
             backgroundColor: "#1E2225",
           },
           href: "/home",
+        }}
+      />
+
+      <Tabs.Screen
+        name="accesses"
+        options={{
+          tabBarShowLabel: false,
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons
+              name={"car-clock"}
+              size={size}
+              color={color}
+            />
+          ),
+          headerTitle: () => <Logo size={28} />,
+          headerStyle: {
+            backgroundColor: "#1E2225",
+          },
+          href: "/home/accesses",
         }}
       />
 
