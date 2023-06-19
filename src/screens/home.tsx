@@ -3,21 +3,39 @@ import { Header } from "../../src/components/header";
 import ButtonCircular from "../../src/components/circular-button";
 import { Access } from "../../src/models/access.entity";
 import dayjs from "dayjs";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { client } from "../../src/lib/api";
+import { Picker } from "@react-native-picker/picker";
+import { Car } from "../models/car.entity";
+import { useFocusEffect } from "@react-navigation/native";
 
 export function HomeScreen() {
   const [accesses, setAccesses] = useState<Access[]>([]);
 
-  useEffect(() => {
-    client.get("/accesses").then((response) => {
-      setAccesses(response.data);
-    });
-  }, []);
+  const [carId, setCarId] = useState<string | null>(null);
+
+  const [cars, setCars] = useState<Car[]>([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      client.get("/accesses").then((response) => {
+        setAccesses(response.data);
+      });
+
+      client.get("/cars").then((response) => {
+        setCars(response.data);
+      });
+    }, [])
+  );
 
   async function onRelease() {
+    if (!carId) {
+      return;
+    }
+
     const response = await client.post("/accesses", {
       date: dayjs().format("YYYY-MM-DD HH:mm:ss"),
+      carId: carId,
     });
 
     setAccesses([...accesses, response.data]);
@@ -32,24 +50,19 @@ export function HomeScreen() {
         </Header.Description>
       </Header>
 
-      <ScrollView className="px-4 gap-2">
-        {accesses.map((item) => (
-          <View
-            key={item.id}
-            className="border border-solid border-gray-600 p-3 rounded-lg flex-row justify-between bg-[#1E2225]"
-          >
-            <Text className="font-poppins-400 text-white">
-              {/* {item} */}
-            </Text>
-
-            <Text className="font-poppins-400 text-white">
-              {dayjs(item.date).format("DD/MM/YYYY HH:mm")}
-            </Text>
-          </View>
+      <Picker
+        itemStyle={{
+          color: "white",
+        }}
+        selectedValue={carId}
+        onValueChange={(itemValue, itemIndex) => setCarId(itemValue)}
+      >
+        {cars.map((item) => (
+          <Picker.Item key={item.id} label={item.plate} value={item.id} />
         ))}
-      </ScrollView>
+      </Picker>
 
-      <View className="mt-auto items-center my-4">
+      <View className="mt-auto items-center my-auto">
         {/* @ts-ignore */}
         <ButtonCircular onRelease={onRelease} />
       </View>

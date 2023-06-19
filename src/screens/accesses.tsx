@@ -4,19 +4,16 @@ import { Access } from "../../src/models/access.entity";
 import dayjs from "dayjs";
 import { useCallback, useEffect, useState } from "react";
 import { client } from "../../src/lib/api";
+import { useFocusEffect } from "@react-navigation/native";
 
 export function AccessesScreen() {
   const [accesses, setAccesses] = useState<Access[]>([]);
 
-  const load = useCallback(async () => {
-    const response = await client.get("/accesses");
-
-    setAccesses(response.data);
-  }, []);
-
-  useEffect(() => {
-    load();
-  }, [load]);
+  useFocusEffect(useCallback(() => {
+    client.get("/accesses").then((response) => {
+      setAccesses(response.data);
+    });
+  }, []));
 
   return (
     <View className="flex flex-col flex-1 bg-[#212529]">
