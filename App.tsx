@@ -1,20 +1,27 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { NavigationContainer } from "@react-navigation/native";
+import { Routes } from "./src/navigation";
+import { AuthContext, AuthProvider } from "./src/context/auth";
+import { AuthRoutes } from "./src/navigation/auth-routes";
+import * as SplashScreen from "expo-splash-screen";
+
+SplashScreen.preventAutoHideAsync()
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <AuthProvider>
+      <AuthContext.Consumer>
+        {(value) =>
+          value.user ? (
+            <NavigationContainer>
+              <Routes />
+            </NavigationContainer>
+          ) : (
+            <NavigationContainer>
+              <AuthRoutes />
+            </NavigationContainer>
+          )
+        }
+      </AuthContext.Consumer>
+    </AuthProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

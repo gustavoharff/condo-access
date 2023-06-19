@@ -1,26 +1,13 @@
-import { useRouter } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
 import { Text, View } from "react-native";
 import { Input } from "../../src/components/input";
-import { useFonts } from "expo-font";
-import AppLoading from "expo-app-loading";
-import {
-  Poppins_400Regular,
-  Poppins_500Medium,
-  Poppins_700Bold,
-} from "@expo-google-fonts/poppins";
 import { Logo } from "../../src/components/logo";
 import { Button } from "../../src/components/button";
-import { useState } from "react";
+import {  useState } from "react";
 import { useAuth } from "../../src/context/auth";
 
-export default function Login() {
-  const [loaded] = useFonts({
-    Poppins_400Regular,
-    Poppins_500Medium,
-    Poppins_700Bold,
-  });
-
-  const router = useRouter();
+export function AuthScreen() {
+  const navigation = useNavigation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,12 +17,10 @@ export default function Login() {
   async function onSubmit() {
     await signIn(email, password);
 
-    router.push("/home");
+    // @ts-ignore
+    navigation.navigate("/home");
   }
 
-  if (!loaded) {
-    return <AppLoading />;
-  }
 
   return (
     <View className="flex flex-1 items-center justify-center">

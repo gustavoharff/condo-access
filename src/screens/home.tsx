@@ -4,11 +4,9 @@ import ButtonCircular from "../../src/components/circular-button";
 import { Access } from "../../src/models/access.entity";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
-import axios from "axios";
-import { useAuth } from "../../src/context/auth";
 import { client } from "../../src/lib/api";
 
-export default function Home() {
+export function HomeScreen() {
   const [accesses, setAccesses] = useState<Access[]>([]);
 
   useEffect(() => {
@@ -26,7 +24,7 @@ export default function Home() {
   }
 
   return (
-    <View className="flex flex-col flex-1">
+    <View className="flex flex-col flex-1 bg-[#212529]">
       <Header className="m-4">
         <Header.Title>Abrir portão</Header.Title>
         <Header.Description>

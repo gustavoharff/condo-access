@@ -2,29 +2,24 @@ import { ScrollView, Text, View } from "react-native";
 import { Header } from "../../src/components/header";
 import { Access } from "../../src/models/access.entity";
 import dayjs from "dayjs";
+import { useCallback, useEffect, useState } from "react";
+import { client } from "../../src/lib/api";
 
-export default function Accesses() {
-  const items: Access[] = [
-    {
-      id: "1",
-      date: new Date(),
-      car: {
-        id: "1",
-        plate: "ABC-1234",
-      },
-    },
-    {
-      id: "2",
-      date: new Date(),
-      car: {
-        id: "2",
-        plate: "ABC-1234",
-      },
-    },
-  ];
+export function AccessesScreen() {
+  const [accesses, setAccesses] = useState<Access[]>([]);
+
+  const load = useCallback(async () => {
+    const response = await client.get("/accesses");
+
+    setAccesses(response.data);
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   return (
-    <View className="flex flex-col flex-1">
+    <View className="flex flex-col flex-1 bg-[#212529]">
       <Header className="m-4">
         <Header.Title>Acessos</Header.Title>
         <Header.Description>
@@ -39,7 +34,7 @@ export default function Accesses() {
       </View>
 
       <ScrollView className="px-4 gap-2">
-        {items.map((item) => (
+        {accesses.map((item) => (
           <View
             key={item.id}
             className="border border-solid border-gray-600 p-3 rounded-lg flex-row justify-between bg-[#1E2225]"
