@@ -1,16 +1,13 @@
 import { ScrollView, Text, View } from "react-native";
-import { ActionButton } from "../../src/components/action-button";
-import { useNavigation } from "@react-navigation/native";
 import { useContext, useEffect, useState } from "react";
 import { Header } from "../../src/components/header";
-import { Car, Session } from "../lib/realm";
+import { Car } from "../lib/realm";
 import { RealmContext } from "../context/realm";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { green } from "tailwindcss/colors";
+import { UpdateMode } from "realm";
 
-
-export function CarsScreen() {
-  const navigation = useNavigation();
-
+export function AproveCarsScreen() {
   const [cars, setCars] = useState<Car[]>([]);
 
   const { realm } = useContext(RealmContext);
@@ -20,9 +17,9 @@ export function CarsScreen() {
       return;
     }
 
-    const user = realm.objects<Session>("Session")[0].user;
-
-    const objects = realm.objects<Car>("Car").filtered("user == $0", user);
+    const objects = realm
+      .objects<Car>("Car")
+      .filtered("status == $0", "pending");
 
     objects.addListener((collection) => {
       setCars(collection.toJSON() as Car[]);
@@ -33,17 +30,12 @@ export function CarsScreen() {
     };
   }, [realm]);
 
-  function onAddPress() {
-    // @ts-ignore
-    navigation.navigate("add-car");
-  }
-
   return (
     <View className="flex-1 relative bg-[#212529]">
       <Header className="m-4">
-        <Header.Title>Acessos</Header.Title>
+        <Header.Title>Carros do condomínio</Header.Title>
         <Header.Description>
-          Consulte aqui todos os seus acessos no condomínio.
+          Aprove a solicitação de acesso de um morador.
         </Header.Description>
       </Header>
 
@@ -55,11 +47,27 @@ export function CarsScreen() {
           >
             <Text className="font-poppins-400 text-white">{car.plate}</Text>
 
-            <MaterialCommunityIcons name={car.status === "pending" ? "clock-outline" : "check"} color="gray" size={24} />
+            {car.status === "pending" && (
+              <MaterialCommunityIcons
+                name="clock-outline"
+                color={green[500]}
+                size={24}
+                onPress={() => {
+                  if (!realm) {
+                    return;
+                  }
+
+                  realm.write(() => {
+                    car.status = "approved";
+
+                    realm.create<Car>("Car", car, UpdateMode.Modified);
+                  });
+                }}
+              />
+            )}
           </View>
         ))}
       </ScrollView>
-      <ActionButton onPress={onAddPress} />
     </View>
   );
 }

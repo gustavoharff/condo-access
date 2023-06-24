@@ -2,7 +2,6 @@ import { Text, TouchableOpacity, View } from "react-native";
 
 import { useCallback, useContext, useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-import { client } from "../lib/api";
 import { Header } from "../components/header";
 import { Input } from "../components/input";
 import { RealmContext } from "../context/realm";
@@ -27,6 +26,7 @@ export default function AddCar() {
         id: Crypto.randomUUID(),
         plate: plate,
         user: realm.objects<Session>("Session")[0].user,
+        status: "pending"
       });
     });
 

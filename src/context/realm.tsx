@@ -22,7 +22,7 @@ export function RealmProvider(props: PropsWithChildren) {
   useEffect(() => {
     Realm.open({
       schema: [UserSchema, SessionSchema, CarSchema, AccessSchema],
-      schemaVersion: 5,
+      schemaVersion: 9,
       onFirstOpen: (realm) => {
         realm.create("User", {
           id: Crypto.randomUUID(),

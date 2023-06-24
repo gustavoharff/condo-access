@@ -1,17 +1,11 @@
-// import { useRouter, useSegments } from "expo-router";
 import React, {
   PropsWithChildren,
   useCallback,
   useContext,
   useEffect,
-  useMemo,
 } from "react";
-import axios, { AxiosInstance } from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { client } from "../lib/api";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
-
 
 import {
   Poppins_400Regular,
@@ -46,8 +40,18 @@ export function AuthProvider(props: PropsWithChildren) {
   const [user, setUser] = React.useState<User | null>(null);
 
   const signOut = useCallback(() => {
-    realm?.write(() => {
-      realm.deleteModel("Session");
+    if (!realm) {
+      return;
+    }
+
+    const session = realm.objects<Session>("Session")[0];
+
+    if (!session) {
+      return;
+    }
+
+    realm.write(() => {
+      realm.delete(session);
     });
 
     setUser(null);

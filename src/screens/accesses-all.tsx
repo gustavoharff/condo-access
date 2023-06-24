@@ -2,10 +2,10 @@ import { ScrollView, Text, View } from "react-native";
 import { Header } from "../../src/components/header";
 import dayjs from "dayjs";
 import { useContext, useEffect, useState } from "react";
-import { Access, Session } from "../lib/realm";
+import { Access } from "../lib/realm";
 import { RealmContext } from "../context/realm";
 
-export function AccessesScreen() {
+export function AccessesAllScreen() {
   const [accesses, setAccesses] = useState<Access[]>([]);
 
   const { realm } = useContext(RealmContext);
@@ -15,11 +15,7 @@ export function AccessesScreen() {
       return;
     }
 
-    const user = realm.objects<Session>("Session")[0].user;
-
-    const objects = realm
-      .objects<Access>("Access")
-      .filtered("user == $0", user);
+    const objects = realm.objects<Access>("Access");
 
     objects.addListener((collection) => {
       setAccesses(collection.toJSON() as Access[]);
@@ -33,9 +29,9 @@ export function AccessesScreen() {
   return (
     <View className="flex flex-col flex-1 bg-[#212529]">
       <Header className="m-4">
-        <Header.Title>Acessos</Header.Title>
+        <Header.Title>Todos os acessos</Header.Title>
         <Header.Description>
-          Consulte aqui todos os seus acessos no condomínio.
+          Consulte aqui todos os acessos dos moradores do condomínio.
         </Header.Description>
       </Header>
 

@@ -1,13 +1,12 @@
-import { ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { Header } from "../../src/components/header";
 import ButtonCircular from "../../src/components/circular-button";
 import dayjs from "dayjs";
-import { useCallback, useContext, useEffect, useState } from "react";
-import { client } from "../../src/lib/api";
+import { useContext, useEffect, useState } from "react";
 import { Picker } from "@react-native-picker/picker";
-import { useFocusEffect } from "@react-navigation/native";
-import { Access, Car } from "../lib/realm";
+import { Access, Car, Session } from "../lib/realm";
 import { RealmContext } from "../context/realm";
+import * as Crypto from "expo-crypto";
 
 export function HomeScreen() {
   const [carId, setCarId] = useState<string | null>(null);
@@ -21,7 +20,9 @@ export function HomeScreen() {
       return;
     }
 
-    const objects = realm.objects<Car>("Car");
+    const user = realm.objects<Session>("Session")[0].user;
+
+    const objects = realm.objects<Car>("Car").filtered("user = $0 and status == 'approved'", user);
 
     objects.addListener((collection) => {
       setCars(collection.toJSON() as Car[]);
@@ -45,9 +46,10 @@ export function HomeScreen() {
 
     realm.write(() => {
       realm.create<Access>("Access", {
-        id: Math.random().toString(),
+        id: Crypto.randomUUID(),
         date: dayjs().toDate(),
         car: car,
+        user: realm.objects<Session>("Session")[0].user,
       });
     });
   }

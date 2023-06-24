@@ -34,6 +34,7 @@ export type Car = {
   id: string;
   plate: string;
   user: User;
+  status: string
 };
 
 export const CarSchema = {
@@ -43,6 +44,7 @@ export const CarSchema = {
     id: "string",
     plate: "string",
     user: "User",
+    status: "string"
   },
 };
 
