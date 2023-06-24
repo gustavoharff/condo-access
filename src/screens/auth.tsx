@@ -1,10 +1,13 @@
 import { useNavigation } from "@react-navigation/native";
-import { Text, View } from "react-native";
+import { Alert, Text, View } from "react-native";
 import { Input } from "../../src/components/input";
 import { Logo } from "../../src/components/logo";
 import { Button } from "../../src/components/button";
-import {  useState } from "react";
+import { useContext, useState } from "react";
 import { useAuth } from "../../src/context/auth";
+import { RealmContext } from "../context/realm";
+import { Session, User } from "../lib/realm";
+import * as Crypto from "expo-crypto";
 
 export function AuthScreen() {
   const navigation = useNavigation();
@@ -12,18 +15,28 @@ export function AuthScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const { signIn } = useAuth();
+  const { realm } = useContext(RealmContext);
 
   async function onSubmit() {
-    await signIn(email, password);
+    const user = realm
+      ?.objects<User>("User")
+      .filtered("email = $0 and password = $1", email, password)[0];
 
-    // @ts-ignore
-    navigation.navigate("/home");
+    if (!user) {
+      Alert.alert("Usuário não encontrado");
+      return;
+    }
+
+    realm.write(() => {
+      realm.create<Session>("Session", {
+        id: Crypto.randomUUID(),
+        user,
+      });
+    });
   }
 
-
   return (
-    <View className="flex flex-1 items-center justify-center">
+    <View className="flex flex-1 items-center justify-center bg-[#212529]">
       <Logo size={120} />
 
       <Text className="font-poppins-700 text-white text-2xl">CONDO ACCESS</Text>

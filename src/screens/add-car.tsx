@@ -1,23 +1,37 @@
 import { Text, TouchableOpacity, View } from "react-native";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { client } from "../lib/api";
 import { Header } from "../components/header";
 import { Input } from "../components/input";
+import { RealmContext } from "../context/realm";
+import { Car, Session } from "../lib/realm";
+
+import * as Crypto from "expo-crypto";
 
 export default function AddCar() {
   const navigation = useNavigation();
 
   const [plate, setPlate] = useState("");
 
-  const onSubmit = useCallback(async ()  => {
-    await client.post("/cars", {
-      plate: plate,
+  const { realm } = useContext(RealmContext);
+
+  const onSubmit = useCallback(async () => {
+    if (!realm) {
+      return;
+    }
+
+    realm.write(() => {
+      realm.create<Car>("Car", {
+        id: Crypto.randomUUID(),
+        plate: plate,
+        user: realm.objects<Session>("Session")[0].user,
+      });
     });
 
     navigation.goBack();
-  }, [plate])
+  }, [plate, realm]);
 
   useEffect(() => {
     navigation.setOptions({

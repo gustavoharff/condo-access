@@ -5,7 +5,9 @@ const Stack = createNativeStackNavigator();
 
 export function AuthRoutes() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{
+      headerShown: false,
+    }}>
       <Stack.Screen name="auth" component={AuthScreen} />
     </Stack.Navigator>
   );

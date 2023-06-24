@@ -1,7 +1,13 @@
 // import { useRouter, useSegments } from "expo-router";
-import React, { PropsWithChildren, useCallback, useEffect, useMemo } from "react";
+import React, {
+  PropsWithChildren,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+} from "react";
 import axios, { AxiosInstance } from "axios";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { client } from "../lib/api";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
@@ -12,47 +18,21 @@ import {
   Poppins_500Medium,
   Poppins_700Bold,
 } from "@expo-google-fonts/poppins";
-
-type User = {
-  id: string;
-  name: string;
-  email: string;
-};
+import { RealmContext } from "./realm";
+import { Session, User } from "../lib/realm";
 
 interface AuthContextData {
   user: User | null;
-  signIn: (email: string, password: string) => Promise<void>;
   signOut: () => void;
 }
 
-export const AuthContext = React.createContext<AuthContextData>({} as AuthContextData);
+export const AuthContext = React.createContext<AuthContextData>(
+  {} as AuthContextData
+);
 
-// This hook can be used to access the user info.
 export function useAuth() {
   return React.useContext(AuthContext);
 }
-
-// This hook will protect the route access based on user authentication.
-// function useProtectedRoute(user: User | null) {
-//   const segments = useSegments();
-//   const router = useRouter();
-
-//   React.useEffect(() => {
-//     const inAuthGroup = segments[0] === "(auth)";
-
-//     if (
-//       // If the user is not signed in and the initial segment is not anything in the auth group.
-//       !user &&
-//       !inAuthGroup
-//     ) {
-//       // Redirect to the sign-in page.
-//       router.replace("/");
-//     } else if (user && inAuthGroup) {
-//       // Redirect away from the sign-in page.
-//       router.replace("/home");
-//     }
-//   }, [user, segments]);
-// }
 
 export function AuthProvider(props: PropsWithChildren) {
   const [loaded] = useFonts({
@@ -61,62 +41,51 @@ export function AuthProvider(props: PropsWithChildren) {
     Poppins_700Bold,
   });
 
-
-
+  const { realm } = useContext(RealmContext);
 
   const [user, setUser] = React.useState<User | null>(null);
-  const [loading, setLoading] = React.useState(true);
-
-  // useProtectedRoute(user);
-
-  const signIn = useCallback(async (email: string, password: string) => {
-    const response = await client.post("/auth", {
-      email,
-      password,
-    });
-
-    client.defaults.headers.authorization = `Bearer ${response.data.token}`;
-    await AsyncStorage.setItem('token', response.data.token);
-    await AsyncStorage.setItem('user', JSON.stringify(response.data.user));
-
-    setUser(response.data.user);
-  }, []);
 
   const signOut = useCallback(() => {
-    delete client.defaults.headers.authorization;
-
-    AsyncStorage.removeItem('token');
-    AsyncStorage.removeItem('user');
+    realm?.write(() => {
+      realm.deleteModel("Session");
+    });
 
     setUser(null);
-  }, []);
+  }, [realm]);
 
   useEffect(() => {
-    (async () => {
-      const storagedToken = await AsyncStorage.getItem('token');
-      const storagedUser = await AsyncStorage.getItem('user');
+    if (!realm) {
+      return;
+    }
 
-      if (storagedToken && storagedUser) {
-        client.defaults.headers.authorization = `Bearer ${storagedToken}`;
-        setUser(JSON.parse(storagedUser));
+    const objects = realm.objects<Session>("Session");
+
+    objects.addListener((collection) => {
+      if (collection.length === 0) {
+        setUser(null);
+        return;
       }
 
-      setLoading(false)
-    })();
-  }, [])
+      setUser(collection[0].user);
+    });
+
+    return () => {
+      objects.removeAllListeners();
+    };
+  }, [realm]);
 
   useEffect(() => {
-    if (loaded && !loading) {
+    if (loaded) {
       SplashScreen.hideAsync();
     }
-  }, [loaded])
+  }, [loaded]);
 
-  if (!loaded || loading) {
+  if (!loaded) {
     return null;
   }
 
   return (
-    <AuthContext.Provider value={{ user, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, signOut }}>
       {props.children}
     </AuthContext.Provider>
   );

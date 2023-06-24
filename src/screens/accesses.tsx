@@ -1,19 +1,30 @@
 import { ScrollView, Text, View } from "react-native";
 import { Header } from "../../src/components/header";
-import { Access } from "../../src/models/access.entity";
 import dayjs from "dayjs";
-import { useCallback, useEffect, useState } from "react";
-import { client } from "../../src/lib/api";
-import { useFocusEffect } from "@react-navigation/native";
+import {  useContext, useEffect, useState } from "react";
+import { Access } from "../lib/realm";
+import { RealmContext } from "../context/realm";
 
 export function AccessesScreen() {
   const [accesses, setAccesses] = useState<Access[]>([]);
 
-  useFocusEffect(useCallback(() => {
-    client.get("/accesses").then((response) => {
-      setAccesses(response.data);
+  const { realm } = useContext(RealmContext);
+
+  useEffect(() => {
+    if (!realm) {
+      return;
+    }
+
+    const objects = realm.objects<Access>("Access");
+
+    objects.addListener((collection) => {
+      setAccesses(collection.toJSON() as Access[]);
     });
-  }, []));
+
+    return () => {
+      objects.removeAllListeners();
+    };
+  }, [realm]);
 
   return (
     <View className="flex flex-col flex-1 bg-[#212529]">

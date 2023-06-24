@@ -1,44 +1,55 @@
 import { ScrollView, Text, View } from "react-native";
 import { Header } from "../../src/components/header";
 import ButtonCircular from "../../src/components/circular-button";
-import { Access } from "../../src/models/access.entity";
 import dayjs from "dayjs";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { client } from "../../src/lib/api";
 import { Picker } from "@react-native-picker/picker";
-import { Car } from "../models/car.entity";
 import { useFocusEffect } from "@react-navigation/native";
+import { Access, Car } from "../lib/realm";
+import { RealmContext } from "../context/realm";
 
 export function HomeScreen() {
-  const [accesses, setAccesses] = useState<Access[]>([]);
-
   const [carId, setCarId] = useState<string | null>(null);
 
   const [cars, setCars] = useState<Car[]>([]);
 
-  useFocusEffect(
-    useCallback(() => {
-      client.get("/accesses").then((response) => {
-        setAccesses(response.data);
-      });
+  const { realm } = useContext(RealmContext);
 
-      client.get("/cars").then((response) => {
-        setCars(response.data);
-      });
-    }, [])
-  );
-
-  async function onRelease() {
-    if (!carId) {
+  useEffect(() => {
+    if (!realm) {
       return;
     }
 
-    const response = await client.post("/accesses", {
-      date: dayjs().format("YYYY-MM-DD HH:mm:ss"),
-      carId: carId,
+    const objects = realm.objects<Car>("Car");
+
+    objects.addListener((collection) => {
+      setCars(collection.toJSON() as Car[]);
     });
 
-    setAccesses([...accesses, response.data]);
+    return () => {
+      objects.removeAllListeners();
+    };
+  }, [realm]);
+
+  async function onRelease() {
+    if (!carId || !realm) {
+      return;
+    }
+
+    const car = realm.objectForPrimaryKey<Car>("Car", carId);
+
+    if (!car) {
+      return;
+    }
+
+    realm.write(() => {
+      realm.create<Access>("Access", {
+        id: Math.random().toString(),
+        date: dayjs().toDate(),
+        car: car,
+      });
+    });
   }
 
   return (

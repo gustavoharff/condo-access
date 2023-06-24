@@ -7,6 +7,7 @@ import { CarsScreen } from "../screens/cars";
 
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import AddCar from "../screens/add-car";
+import { useAuth } from "../context/auth";
 
 const Tab = createBottomTabNavigator();
 
@@ -36,6 +37,8 @@ function CarRoutes() {
 }
 
 export function Routes() {
+  const { user } = useAuth()
+
   return (
     <Tab.Navigator
       screenOptions={{

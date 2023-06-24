@@ -1,29 +1,34 @@
 import { ScrollView, Text, View } from "react-native";
 import { ActionButton } from "../../src/components/action-button";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import { useCallback, useState } from "react";
-import { Car } from "../../src/models/car.entity";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { client } from "../../src/lib/api";
 import { Header } from "../../src/components/header";
+import { Car } from "../lib/realm";
+import { RealmContext } from "../context/realm";
 
 export function CarsScreen() {
   const navigation = useNavigation();
 
   const [cars, setCars] = useState<Car[]>([]);
 
-  console.log(cars)
+  const { realm } = useContext(RealmContext);
 
-  const load = useCallback(async () => {
-    const response = await client.get("/cars");
+  useEffect(() => {
+    if (!realm) {
+      return;
+    }
 
-    setCars(response.data);
-  }, []);
+    const objects = realm.objects<Car>("Car");
+    
+    objects.addListener((collection) => {
+      setCars(collection.toJSON() as Car[]);
+    });
 
-  useFocusEffect(
-    useCallback(() => {
-      load();
-    }, [load])
-  );
+    return () => {
+      objects.removeAllListeners();
+    };
+  }, [realm]);
 
   function onAddPress() {
     // @ts-ignore
