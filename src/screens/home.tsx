@@ -22,7 +22,9 @@ export function HomeScreen() {
 
     const user = realm.objects<Session>("Session")[0].user;
 
-    const objects = realm.objects<Car>("Car").filtered("user = $0 and status == 'approved'", user);
+    const objects = realm
+      .objects<Car>("Car")
+      .filtered("user = $0 and status == 'approved'", user);
 
     objects.addListener((collection) => {
       setCars(collection.toJSON() as Car[]);
@@ -69,13 +71,22 @@ export function HomeScreen() {
         }}
         selectedValue={carId}
         onValueChange={(itemValue, itemIndex) => setCarId(itemValue)}
+        dropdownIconColor={"white"}
       >
         {cars.map((item) => (
-          <Picker.Item key={item.id} label={item.plate} value={item.id} />
+          <Picker.Item
+            key={item.id}
+            label={item.plate}
+            value={item.id}
+            color="white"
+            style={{
+              backgroundColor: "#212529",
+            }}
+          />
         ))}
       </Picker>
 
-      <View className="mt-auto items-center my-auto">
+      <View className="items-center my-auto flex-1 justify-end pb-4">
         {/* @ts-ignore */}
         <ButtonCircular onRelease={onRelease} />
       </View>

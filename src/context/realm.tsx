@@ -26,14 +26,14 @@ export function RealmProvider(props: PropsWithChildren) {
       onFirstOpen: (realm) => {
         realm.create("User", {
           id: Crypto.randomUUID(),
-          email: "gustavo.harff@gmail.com",
+          email: "condomino@gmail.com",
           password: "123",
           syndic: false,
         });
 
         realm.create("User", {
           id: Crypto.randomUUID(),
-          email: "gustavo@gmail.com",
+          email: "sindico@gmail.com",
           password: "123",
           syndic: true,
         });
